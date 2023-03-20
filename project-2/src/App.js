@@ -1,50 +1,79 @@
-import { useReducer } from 'react';
-import './App.css';
 //eslint-disable-next-line
-const globalState = {
+import { createContext, useContext, useReducer, useRef } from 'react';
+import P from 'prop-types';
+import './App.css';
+
+// actions.js
+export const actions = {
+  CHANGE_TITLE: 'CHANGE_TITLE',
+};
+
+//data.js
+//eslint-disable-next-line
+export const globalState = {
   title: 'O Título que contexto',
   body: 'O body do contexto',
   counter: 0,
 };
+
+// reducer.js
 //eslint-disable-next-line
-const reducer = (state, action) => {
+export const reducer = (state, action) => {
+  console.log(action);
   switch (action.type) {
-    case 'muda': {
-      console.log('Chamou Muda com', action.payload);
-      return { ...state, title: 'Mudou' };
-    }
-    case 'inverter': {
-      console.log('Chamou inverter');
-      const { title } = state;
-      return { ...state, title: title.split('').reverse().join('') };
+    case actions.CHANGE_TITLE: {
+      console.log('Mudar título');
+      return { ...state, title: action.payLoad };
     }
   }
   return { ...state };
 };
 
-function App() {
+//AppContext.jsx
+export const Context = createContext();
+//eslint-disable-next-line
+export const AppContext = ({ children }) => {
   //eslint-disable-next-line
   const [state, dispatch] = useReducer(reducer, globalState);
-  //eslint-disable-next-line
-  const { counter, title, body } = state;
+
+  const changeTitle = (payLoad) => {
+    dispatch({ type: actions.CHANGE_TITLE, payLoad });
+  };
 
   return (
-    <div>
-      <h1>
-        {title}, {counter}
+    <Context.Provider value={{ state, changeTitle }}>
+      {children}
+    </Context.Provider>
+  );
+};
+
+AppContext.prototype = {
+  children: P.node,
+};
+
+//H1 / indes.jsx
+export const H1 = () => {
+  const context = useContext(Context);
+  const inputRef = useRef();
+
+  return (
+    <>
+      <h1 onClick={() => context.changeTitle(inputRef.current.value)}>
+        {context.state.title}
       </h1>
-      <button
-        onClick={() =>
-          dispatch({
-            type: 'muda',
-            payload: new Date().toLocaleDateString('pt-br'),
-          })
-        }
-      >
-        Muda
-      </button>
-      <button onClick={() => dispatch({ type: 'inverter' })}>Inverte</button>
-    </div>
+      <input type="text" ref={inputRef} />
+    </>
+  );
+};
+
+// App.jsx
+function App() {
+  return (
+    <AppContext>
+      <div>
+        <H1 />
+      </div>
+    </AppContext>
   );
 }
 

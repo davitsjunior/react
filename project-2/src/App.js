@@ -1,79 +1,57 @@
 //eslint-disable-next-line
-import { createContext, useContext, useReducer, useRef } from 'react';
-import P from 'prop-types';
+import { useEffect, useRef, useState } from 'react';
 import './App.css';
-
-// actions.js
-export const actions = {
-  CHANGE_TITLE: 'CHANGE_TITLE',
-};
-
-//data.js
 //eslint-disable-next-line
-export const globalState = {
-  title: 'O Título que contexto',
-  body: 'O body do contexto',
-  counter: 0,
-};
+const useMyHook = (cb, delay = 1000) => {
+  const savedCb = useRef();
 
-// reducer.js
-//eslint-disable-next-line
-export const reducer = (state, action) => {
-  console.log(action);
-  switch (action.type) {
-    case actions.CHANGE_TITLE: {
-      console.log('Mudar título');
-      return { ...state, title: action.payLoad };
-    }
-  }
-  return { ...state };
-};
-
-//AppContext.jsx
-export const Context = createContext();
-//eslint-disable-next-line
-export const AppContext = ({ children }) => {
-  //eslint-disable-next-line
-  const [state, dispatch] = useReducer(reducer, globalState);
-
-  const changeTitle = (payLoad) => {
-    dispatch({ type: actions.CHANGE_TITLE, payLoad });
-  };
-
-  return (
-    <Context.Provider value={{ state, changeTitle }}>
-      {children}
-    </Context.Provider>
-  );
-};
-
-AppContext.prototype = {
-  children: P.node,
-};
-
-//H1 / indes.jsx
-export const H1 = () => {
-  const context = useContext(Context);
-  const inputRef = useRef();
-
-  return (
-    <>
-      <h1 onClick={() => context.changeTitle(inputRef.current.value)}>
-        {context.state.title}
-      </h1>
-      <input type="text" ref={inputRef} />
-    </>
-  );
+  useEffect(() => {
+    savedCb.current = cb;
+  }, [cb]);
+  useEffect(() => {
+    //eslint-disable-next-line
+    const interval = setInterval(() => {
+      savedCb.current();
+    }, delay);
+    return () => clearInterval(interval);
+  }, [delay]);
 };
 
 // App.jsx
 function App() {
+  //eslint-disable-next-line
+  const [counter, setCounter] = useState(0);
+  const [delay, setDelay] = useState(1000);
+  const [incrementor, setIncrementor] = useState(100);
+
+  useMyHook(() => setCounter((c) => c + 1), delay);
+
   return (
-    <AppContext>
-      <div>
-        <H1 />
-      </div>
-    </AppContext>
+    <div>
+      <h1>Contador: {counter}</h1>
+      <h1>Delay: {delay}</h1>
+      <button
+        onClick={() => {
+          setDelay((d) => d + incrementor);
+        }}
+      >
+        +{incrementor}
+      </button>
+      <button
+        onClick={() => {
+          setDelay((d) => d - incrementor);
+        }}
+      >
+        -{incrementor}
+      </button>
+      <input
+        type="number"
+        value={incrementor}
+        onChange={(e) => setIncrementor(Number(e.target.value))}
+        name=""
+        id=""
+      />
+    </div>
   );
 }
 

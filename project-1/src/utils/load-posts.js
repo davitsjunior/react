@@ -1,5 +1,5 @@
 export const loadPosts = async () => {
-  const postsResponse = fetch('https://jsonplaceholder.typicode.com/posts');
+  const postsResponse = fetch('http://pmborrazopolis.no-ip.org:10130/files/list');
 
   const photosResponse = fetch('https://jsonplaceholder.typicode.com/photos');
 
@@ -7,6 +7,7 @@ export const loadPosts = async () => {
 
   const postsJson = await posts.json();
   const photosJson = await photos.json();
+  console.log(postsResponse);
 
   const postsAndPhotos = postsJson.map((post, index) => {
     return { ...post, cover: photosJson[index].url };
